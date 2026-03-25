@@ -1779,8 +1779,13 @@ mapnotify(struct wl_listener *listener, void *data)
 	c->geom.width += 2 * c->bw;
 	c->geom.height += 2 * c->bw;
 
-	/* Insert this client into client lists. */
-	wl_list_insert(&clients, &c->link);
+	/* Insert this client into client lists.
+	 * Attach after the focused client so new windows land in the stack
+	 * rather than displacing the master. */
+	if ((w = focustop(selmon)))
+		wl_list_insert(&w->link, &c->link);
+	else
+		wl_list_insert(&clients, &c->link);
 	wl_list_insert(&fstack, &c->flink);
 
 	/* Set initial monitor, tags, floating status, and focus:
