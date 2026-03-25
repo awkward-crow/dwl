@@ -248,6 +248,7 @@ static void arrangelayer(Monitor *m, struct wl_list *list,
 		struct wlr_box *usable_area, int exclusive);
 static void arrangelayers(Monitor *m);
 static void axisnotify(struct wl_listener *listener, void *data);
+static void bubble(const Arg *arg);
 static void buttonpress(struct wl_listener *listener, void *data);
 static void chvt(const Arg *arg);
 static void checkidleinhibitor(struct wlr_surface *exclude);
@@ -1484,6 +1485,58 @@ focusmon(const Arg *arg)
 		while (!selmon->wlr_output->enabled && i++ < nmons);
 	}
 	focusclient(focustop(selmon), 1);
+}
+
+void
+bubble(const Arg *arg)
+{
+	Client *c = focustop(selmon), *o;
+	int wrapped = 0;
+	if (!c)
+		return;
+	if (arg->i > 0) {
+		wl_list_for_each(o, &c->link, link) {
+			if (&o->link == &clients) {
+				wrapped = 1;
+				continue; /* wrap past the sentinel node */
+			}
+			if (VISIBLEON(o, selmon))
+				break;
+		}
+		if (o == c)
+			return;
+		wl_list_remove(&c->link);
+		if (wrapped) {
+			/* c was last; swap with o (first): put c at head, o at tail */
+			wl_list_remove(&o->link);
+			wl_list_insert(&clients, &c->link);
+			wl_list_insert(clients.prev, &o->link);
+		} else {
+			wl_list_insert(&o->link, &c->link);
+		}
+	} else {
+		wl_list_for_each_reverse(o, &c->link, link) {
+			if (&o->link == &clients) {
+				wrapped = 1;
+				continue; /* wrap past the sentinel node */
+			}
+			if (VISIBLEON(o, selmon))
+				break;
+		}
+		if (o == c)
+			return;
+		wl_list_remove(&c->link);
+		if (wrapped) {
+			/* c was first; swap with o (last): put o at head, c at tail */
+			wl_list_remove(&o->link);
+			wl_list_insert(&clients, &o->link);
+			wl_list_insert(clients.prev, &c->link);
+		} else {
+			wl_list_insert(o->link.prev, &c->link);
+		}
+	}
+	focusclient(c, 1);
+	arrange(selmon);
 }
 
 void

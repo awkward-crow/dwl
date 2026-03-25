@@ -1,4 +1,4 @@
-# Dvorak keyboard setup notes
+# dvorak keyboard setup notes
 
 ## Files changed
 
@@ -54,8 +54,40 @@ else
 This keeps new windows from displacing the master and places them next to the
 window that spawned them in the stack.
 
+### `bubble` — move client up/down in tiling order
+Ported from the dwm bubble patch. Moves the focused client one position
+forward or backward in the `clients` list (tiling order), wrapping at
+both ends.
+
+Original dwm patch used singly-linked `->next` list, `selmon->sel`,
+`selmon->clients`, `swap()`, `focus()`, and `ISVISIBLE()`. Port differences:
+
+- `selmon->sel` → `focustop(selmon)`
+- `selmon->clients` + `->next` → `wl_list` iteration
+- `ISVISIBLE()` → `VISIBLEON(c, selmon)`
+- `swap(t, s)` → `wl_list_remove` + `wl_list_insert`
+- `focus(c)` → `focusclient(c, 1)`
+
+Wrapping: `wl_list_for_each` / `wl_list_for_each_reverse` are circular; the
+sentinel node (`&clients` / `&c->link`) is skipped with a `continue`. If after
+a full wrap no other visible client is found (`o == c`), the function returns
+without moving anything.
+
+List manipulation:
+- Non-wrap forward: find next visible `o`, insert `c` after `o` (swap adjacent)
+- Non-wrap backward: find previous visible `o`, insert `c` before `o` (swap adjacent)
+- Wrap forward (c was last): find first visible `o`; remove both, put `c` at head, `o` at tail (swap ends)
+- Wrap backward (c was first): find last visible `o`; remove both, put `o` at head, `c` at tail (swap ends)
+
+Wrapping is detected with a `wrapped` flag set when the sentinel is crossed during iteration.
+
+Forward declaration added alongside other `static void` declarations.
+
 ### Functions not available in stock dwl
-The following bindings from the dwm config are commented out and need patches:
+The following bindings from the dwm config are commented out and still need patches:
 - `togglebar` — requires a bar patch
-- `bubble` — dwm-specific patch (move window up/down in stack)
 - `roll` — dwm-specific patch (rotate windows in stack)
+
+
+
+#### end
