@@ -83,10 +83,30 @@ Wrapping is detected with a `wrapped` flag set when the sentinel is crossed duri
 
 Forward declaration added alongside other `static void` declarations.
 
+### `roll` — rotate tiling order, keeping focus
+Ported from the dwm roll patch. Cyclically rotates the tiling order on selmon;
+the focused client retains focus and its position in the list changes as the
+list rotates around it.
+
+- `arg->i > 0`: moves the first visible tiled client to after the last (e.g.
+  `[T1, T2*, T3]` → `[T2*, T3, T1]`)
+- `arg->i < 0`: moves the last visible tiled client to before the first
+
+Port differences from the dwm patch (singly-linked list, `selmon->clients`,
+`ISVISIBLE`):
+
+- `selmon->clients` + `->next` → `wl_list` iteration over `clients`
+- `ISVISIBLE()` → `VISIBLEON(c, selmon)` with `!c->isfloating`
+- List manipulation via `wl_list_remove` + `wl_list_insert`
+- `wl_list_insert(&last->link, &first->link)` inserts first after last
+- `wl_list_insert(first->link.prev, &last->link)` inserts last before first
+- `focus(c)` → `focusclient(sel, 1)` to re-raise the already-focused client
+
+Keybindings: `Ctrl+t` (roll −1) and `Ctrl+c` (roll +1).
+
 ### Functions not available in stock dwl
 The following bindings from the dwm config are commented out and still need patches:
 - `togglebar` — requires a bar patch
-- `roll` — dwm-specific patch (rotate windows in stack)
 
 
 

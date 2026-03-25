@@ -352,6 +352,7 @@ static void virtualpointer(struct wl_listener *listener, void *data);
 static Monitor *xytomon(double x, double y);
 static void xytonode(double x, double y, struct wlr_surface **psurface,
 		Client **pc, LayerSurface **pl, double *nx, double *ny);
+static void roll(const Arg *arg);
 static void zoom(const Arg *arg);
 
 /* variables */
@@ -3100,6 +3101,37 @@ xytonode(double x, double y, struct wlr_surface **psurface,
 	if (psurface) *psurface = surface;
 	if (pc) *pc = c;
 	if (pl) *pl = l;
+}
+
+void
+roll(const Arg *arg)
+{
+	Client *c, *first = NULL, *last = NULL, *sel = focustop(selmon);
+
+	if (!sel || !selmon)
+		return;
+
+	wl_list_for_each(c, &clients, link) {
+		if (VISIBLEON(c, selmon) && !c->isfloating) {
+			if (!first)
+				first = c;
+			last = c;
+		}
+	}
+
+	if (!first || first == last)
+		return;
+
+	if (arg->i > 0) {
+		wl_list_remove(&first->link);
+		wl_list_insert(&last->link, &first->link);
+	} else {
+		wl_list_remove(&last->link);
+		wl_list_insert(first->link.prev, &last->link);
+	}
+
+	focusclient(sel, 1);
+	arrange(selmon);
 }
 
 void
