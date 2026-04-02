@@ -1,5 +1,11 @@
 # dwl
 
+## fork ...
+
+This is a "manual" fork of https://codeberg.org/dwl/dwl. The readme of the original repo has been moved to `README_original.md`.
+
+This version has been patched for a customised dvorak keyboard layout with some extra functionality thrown in e.g. `roll` and `bubble`.
+
 ## latest
 
  - add roll and keybindings
@@ -16,16 +22,7 @@
  - a status bar
  - can nmaster be set dynamically
 
-## git
-
-```sh
-mkdir src
-cd src
-git clone https://codeberg.org/dwl/dwl.git
-cd dwl
-```
-
-## make
+## build and install
 
 minimal changes to `config.mk` to install locally
 
