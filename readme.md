@@ -8,19 +8,22 @@ This version has been patched for a customised dvorak keyboard layout with some 
 
 ## latest
 
- - add roll and keybindings
- - add bubble and keybindings
- - spawn new terminal after the current one
- - customised us dvorak keyboard layout and key mappings, see config.h
+ - add status bar
+ - tidy up ~/etc/wayland, .gitignore
+ - vim-slime and kitty
+ - kitty and my number pad fixed, beep silenced
+ - add Mod+[Shift|Ctrl]+l for incnmaster [+|-]
 
 ## next
 
- - foot, neovim and colors, see below
+ - vim-slime and kitty
+  - something more slick for "kitty listen on"
+  - does it always send `\n`
+
+ - kitty, neovim and colors, see below
  - clipboard in nvim, try :h clipboard
 
  - introduce appearance.h and behaviour.h with defaults and customised colour scheme
- - a status bar
- - can nmaster be set dynamically
 
 ## build and install
 
@@ -35,8 +38,39 @@ seem ok.
 
 ## run 
 
+### `w`
+
+    #!/bin/sh
+    (while true; do
+        echo "$(acpi -b | awk '{print $3" "$4}' | sed 's/,//g') $(date +%-H.%M)"
+        sleep 30
+    done) | dbus-run-session dwl -s "$HOME/a/images/wight.sh 300s $HOME/a/images/hokusai &" "$@"
+
+### 
+
 Try `dwl` at the prompt after logging in.
 
+## background
+
+using `swaybg` to set a solid color or wallpaper:
+
+```sh
+swaybg -c '#F5F5DC' &   # solid beige
+SWAYBG_PID=$!
+dwl
+kill $SWAYBG_PID
+```
+
+or with an image:
+
+```sh
+swaybg -i /path/to/image.png -m fill &
+```
+
+
+## clipboard
+
+have installed `wl-clipboard`. according to clod, with `clipboard = "unnamed,unnamedplus"` in `init.vim`, all should be well. in fact, simply `clipboard=unnamed` seeks ok.
 
 ## colors: foot and neovim
 
