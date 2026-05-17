@@ -8,11 +8,11 @@ This version has been patched for a customised dvorak keyboard layout with some 
 
 ## latest
 
+ - add Mod+Shift+[r|g] for incnmaster [+|-]
  - add status bar
  - tidy up ~/etc/wayland, .gitignore
  - vim-slime and kitty
  - kitty and my number pad fixed, beep silenced
- - add Mod+[Shift|Ctrl]+l for incnmaster [+|-]
 
 ## next
 
