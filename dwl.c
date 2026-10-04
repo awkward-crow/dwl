@@ -2958,14 +2958,27 @@ statusin(int fd, unsigned int mask, void *data)
 	char status[256];
 	ssize_t n;
 
-	if (mask & WL_EVENT_ERROR)
-		die("status in event error");
-	if (mask & WL_EVENT_HANGUP)
+	if (mask & (WL_EVENT_ERROR | WL_EVENT_HANGUP)) {
+		/* status input is gone; stop watching it but keep the last status */
+		if (mask & WL_EVENT_ERROR)
+			fprintf(stderr, "dwl: status input error, no longer reading status\n");
 		wl_event_source_remove(status_event_source);
+		status_event_source = NULL;
+		return 0;
+	}
 
 	n = read(fd, status, sizeof(status) - 1);
-	if (n < 0 && errno != EWOULDBLOCK)
-		die("read:");
+	if (n < 0) {
+		/* nothing to read now; try again on the next wakeup */
+		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
+			return 0;
+		perror("dwl: status read");
+		wl_event_source_remove(status_event_source);
+		status_event_source = NULL;
+		return 0;
+	}
+	if (n == 0) /* writer closed the pipe; keep the last status */
+		return 0;
 
 	status[n] = '\0';
 	status[strcspn(status, "\n")] = '\0';
