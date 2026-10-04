@@ -8,6 +8,13 @@ This version has been patched for a customised dvorak keyboard layout with some 
 
 ## latest
 
+ - EXPERIMENTAL 
+
+    // config.h:76  
+    static const int tap_to_click = 1; 
+
+   set to 0 
+
  - add Mod+Shift+[r|g] for incnmaster [+|-]
  - add status bar
  - tidy up ~/etc/wayland, .gitignore
@@ -40,15 +47,27 @@ seem ok.
 
 ### `w`
 
+a copy of `~/bin/w`
+
     #!/bin/sh
+    # dwl's stderr (errors, crash messages, spawned programs' output) goes here;
+    # the previous session's log is kept as dwl.log.old so a crash log survives the re-login
+    log="${XDG_STATE_HOME:-$HOME/.local/state}/dwl.log"
+    mkdir -p "$(dirname "$log")"
+    [ -f "$log" ] && mv -f "$log" "$log.old"
+
     (while true; do
-        echo "$(acpi -b | awk '{print $3" "$4}' | sed 's/,//g') $(date +%-H.%M)"
+        echo "  $(acpi -b | grep -v Unknown | awk '{print $3" "$4}' | sed 's/,//g')  $(date +%-H.%M)  "
         sleep 30
-    done) | dbus-run-session dwl -s "$HOME/a/images/wight.sh 300s $HOME/a/images/hokusai &" "$@"
+    done) | ssh-agent dbus-run-session dwl -s "/home/crow/a/images/wight.sh 300 /home/crow/a/images/misc" "$@" 2>"$log"
 
 ### 
 
-Try `dwl` at the prompt after logging in.
+Run `exec w` at the prompt after logging in. With `exec` the login shell is
+replaced, so if dwl crashes you are logged out rather than left at a shell.
+
+The log is at `~/.local/state/dwl.log`, with the previous session's log in
+`~/.local/state/dwl.log.old`.
 
 ## background
 
